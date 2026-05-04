@@ -1,2 +1,32 @@
-# ai-audit-cli
-Specs:  Input: Supabase URL + Key.  Audit: Check RLS status, detect exposed secrets, and verify env vars.  Output: JSON/Markdown report with a score/100 and prioritized fixes (CRITICAL/SERIOUS/MISSING).  Format: Simple CLI script only—no complex React frontend. Just a clean, automated terminal tool.
+# AI Audit Checklist Tool
+
+> 🚧 Work in Progress
+
+Open source security audit tool for Supabase applications.
+
+## What it does
+
+- Analyzes a Supabase project configuration
+- Checks RLS (Row Level Security) policies
+- Detects exposed secrets and environment variables
+- Generates a report with a score /100 and prioritized recommendations (CRITICAL / SERIOUS / MISSING)
+
+## Stack
+
+- Node.js / TypeScript
+- Supabase API
+
+## Usage
+
+```bash
+npx ai-audit-tool --url <SUPABASE_URL> --key <SUPABASE_KEY>
+```
+
+## Status
+
+Under active development — first CLI version coming soon.
+
+## Author
+
+Fatou Cissé — QA Engineer & AI Reliability  
+contact@aibyfatou.com
