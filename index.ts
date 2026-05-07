@@ -1,4 +1,4 @@
-type GitHubFile = {
+    type GitHubFile = {
     name: string;
     path: string;
     type: "file" | "dir";
@@ -6,49 +6,49 @@ type GitHubFile = {
     download_url: string | null;
 }
 
-const url =  process.argv[2];
+const url = process.argv[2];
 
 if(url === undefined){
-    console.error ("❌ Usage: npx ts-node index.ts <github-url>");
-     process.exit(1);
-};
+    console.error("❌ Usage: npx ts-node index.ts <github-url>");
+    process.exit(1);
+}
 
 const parts = url.split("/");
 const owner = parts[3];
 const repo = parts[4];
 
-fetch(`https://api.github.com/repos/${owner}/${repo}`)
-    .then((response)=> response.json())
-    .then((data) => {
-    if(data.visibility === "public"){
-        // console.log("This repository is public and accessible for the audit ! ");
-        fetch(`https://api.github.com/repos/${owner}/${repo}/contents`)
-            .then((res)=> res.json())
-            .then((dataLists :GitHubFile[])=>{
-                const gitIgnore = dataLists.find((element)=> element.name === ".gitignore");
-                if(gitIgnore){
-                    // console.log(" GREAT !! This repository contains a gitignore file", gitIgnore);
-                    if(gitIgnore.download_url !== null){
-                        fetch(gitIgnore.download_url)
-                        .then((res)=> res.text())
-                        .then((gitIgnoreContent:string)=> {
-                            if(gitIgnoreContent.includes(".env")){
-                                console.log("Here is the .env file !");
-                            }else{
-                                console.log("this repo is CRITICAL as it does not include any .env file !!")
-                            }
-                        })
-                    }
-                    
-                }else{
-                    console.log("CRITICAL ! This repository does not contains any gitignore !")
-                }
-            })
-    }else{
-        console.log("This repository is private ane not accessible for the audit !")
+async function auditRepo() {
+    const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+    const data = await repoRes.json();
+
+    if(data.visibility !== "public"){
+        console.error("❌ This repository is private and not accessible for the audit!");
         process.exit(1);
     }
-  })
-    .catch((err)=>{
-        console.log("unable to fetch API", err);
-    });
+
+    const contentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`);
+    const dataLists: GitHubFile[] = await contentsRes.json();
+
+    // Check 1 — .gitignore presence
+    const gitIgnore = dataLists.find(f => f.name === ".gitignore");
+    if(!gitIgnore){
+        console.log("🔴 CRITICAL — No .gitignore found!");
+    } else if(gitIgnore.download_url) {
+        const content = await (await fetch(gitIgnore.download_url)).text();
+        if(content.includes(".env")){
+            console.log("🟢 OK — .gitignore contains .env");
+        } else {
+            console.log("🔴 CRITICAL — .gitignore does not contain .env so Your application is vulnerable !");
+        }
+    }
+
+    // Check 2 — .env file exposed
+    const envFile = dataLists.find(f => f.name === ".env");
+    if(envFile){
+        console.log("🔴 CRITICAL — .env file is exposed in the repository!");
+    } else {
+        console.log("🟢 OK — No .env file exposed directly into the repository");
+    }
+}
+
+auditRepo();
