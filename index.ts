@@ -21,13 +21,25 @@ fetch(`https://api.github.com/repos/${owner}/${repo}`)
     .then((response)=> response.json())
     .then((data) => {
     if(data.visibility === "public"){
-        console.log("This repository is public and accessible for the audit ! ");
+        // console.log("This repository is public and accessible for the audit ! ");
         fetch(`https://api.github.com/repos/${owner}/${repo}/contents`)
             .then((res)=> res.json())
             .then((dataLists :GitHubFile[])=>{
                 const gitIgnore = dataLists.find((element)=> element.name === ".gitignore");
                 if(gitIgnore){
-                    console.log(" GREAT !! This repository contains a gitignore file");
+                    // console.log(" GREAT !! This repository contains a gitignore file", gitIgnore);
+                    if(gitIgnore.download_url !== null){
+                        fetch(gitIgnore.download_url)
+                        .then((res)=> res.text())
+                        .then((gitIgnoreContent:string)=> {
+                            if(gitIgnoreContent.includes(".env")){
+                                console.log("Here is the .env file !");
+                            }else{
+                                console.log("this repo is CRITICAL as it does not include any .env file !!")
+                            }
+                        })
+                    }
+                    
                 }else{
                     console.log("CRITICAL ! This repository does not contains any gitignore !")
                 }
