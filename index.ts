@@ -86,6 +86,16 @@ async function auditRepo() {
         await checkTestEnvironment(dataLists);
 
     console.log(`\n📊 SCORE : ${score}/100`);
+
+    const scoreLabels: Record<number, string> = {
+        100: "🟢 EXCELLENT — Production ready!",
+        75: "🟡 GOOD — Minor issues to fix before production",
+        50: "🟠 SERIOUS — Fix issues before deploying",
+        25: "🔴 CRITICAL — Major security issues detected",
+        0: "🔴 DANGER — Do not deploy, immediate action required!"
+    }
+
+    console.log(scoreLabels[score]);
 }
 
 auditRepo();
