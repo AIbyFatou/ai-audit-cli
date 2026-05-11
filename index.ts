@@ -29,6 +29,7 @@ async function auditRepo() {
     const contentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`);
     const dataLists: GitHubFile[] = await contentsRes.json();
 
+
     // Check 1 — .gitignore presence
     const gitIgnore = dataLists.find(f => f.name === ".gitignore");
     if(!gitIgnore){
@@ -58,6 +59,17 @@ async function auditRepo() {
     }else{
         console.log("🟢 OK  - the repo contains a supabase folder ! ")
     }
-}
+
+    // checking of testing environment
+    const packageJson = dataLists.find(f => f.name === "package.json");
+    if(packageJson?.download_url){
+        const content = await (await fetch(packageJson.download_url)).text();
+        if(content.includes("vitest") || content.includes("jest") || content.includes("playwright") || content.includes("cypress")){
+            console.log("🟢 OK - This repo has a Testing Environment");
+        }else{
+            console.log("🔴 CRITICAL - There are no testing environment in this project !!!" )
+        }
+    }
+};
 
 auditRepo();
