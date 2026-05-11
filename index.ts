@@ -49,6 +49,15 @@ async function auditRepo() {
     } else {
         console.log("🟢 OK — No .env file exposed directly into the repository");
     }
+
+
+    //check supabase folder presence
+    const supabaseFolder  = dataLists.find(f => f.name == "supabase" &&  f.type === "dir");
+    if(!supabaseFolder){
+        console.log(" 🔴 CRITICAL, There is no no Supabase folder in this repository !");
+    }else{
+        console.log("🟢 OK  - the repo contains a supabase folder ! ")
+    }
 }
 
 auditRepo();
